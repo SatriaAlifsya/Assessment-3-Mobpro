@@ -2,13 +2,12 @@ package org.d3if0025.mobpro01.network
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import org.d3if0025.mobpro01.model.Hewan
+import org.d3if0025.mobpro01.model.Satria
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 
-private const val BASE_URL = "https://raw.githubusercontent.com/" +
-        "indraazimi/mobpro1-compose/static-api/"
+private const val BASE_URL = "https://api.telutizen.my.id/"
 
 private val moshi = Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
@@ -19,18 +18,18 @@ private val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
     .build()
 
-interface HewanApiService {
-    @GET("static-api.json")
-    suspend fun getHewan(): List<Hewan>
+interface SatriaApiService {
+    @GET("satria")
+    suspend fun getSatria(): List<Satria>
 }
 
-object HewanApi {
-    val service: HewanApiService by lazy {
-        retrofit.create(HewanApiService::class.java)
+object SatriaApi {
+    val service: SatriaApiService by lazy {
+        retrofit.create(SatriaApiService::class.java)
     }
 
-    fun getHewanUrl(imageId: String): String {
-        return "$BASE_URL$imageId.jpg"
+    fun getSatriaUrl(gambar: String): String {
+        return "$BASE_URL$gambar"
     }
 }
 enum class ApiStatus { LOADING, SUCCESS, FAILED }

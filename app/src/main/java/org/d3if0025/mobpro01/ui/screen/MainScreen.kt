@@ -40,9 +40,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.d3if0025.mobpro01.R
-import org.d3if0025.mobpro01.model.Hewan
+import org.d3if0025.mobpro01.model.Satria
 import org.d3if0025.mobpro01.network.ApiStatus
-import org.d3if0025.mobpro01.network.HewanApi
+import org.d3if0025.mobpro01.network.SatriaApi
 import org.d3if0025.mobpro01.ui.theme.Mobpro01Theme
 
 
@@ -87,7 +87,7 @@ fun ScreenContent(modifier: Modifier) {
                 modifier = modifier.fillMaxSize().padding(4.dp),
                 columns = GridCells.Fixed(2),
             ) {
-                items(data) { ListItem(hewan = it) }
+                items(data) { ListItem(satria = it) }
             }
         }
 
@@ -109,19 +109,18 @@ fun ScreenContent(modifier: Modifier) {
         }
     }
 }
-
 @Composable
-fun ListItem(hewan: Hewan) {
+fun ListItem(satria: Satria) {
     Box(
         modifier = Modifier.padding(4.dp).border(1.dp, Color.Gray),
         contentAlignment = Alignment.BottomCenter
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(HewanApi.getHewanUrl(hewan.imageId))
+                .data(SatriaApi.getSatriaUrl(satria.gambar))
                 .crossfade(true)
                 .build(),
-            contentDescription = stringResource(R.string.gambar, hewan.nama),
+            contentDescription = stringResource(R.string.gambar, satria.judul),
             contentScale = ContentScale.Crop,
             placeholder = painterResource(id = R.drawable.loading_img),
             error = painterResource(id = R.drawable.broken_img),
@@ -133,12 +132,12 @@ fun ListItem(hewan: Hewan) {
                 .padding(4.dp)
         ) {
             Text(
-                text = hewan.nama,
+                text = satria.judul,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
             Text(
-                text = hewan.namaLatin,
+                text = satria.deskripsi,
                 fontStyle = FontStyle.Italic,
                 fontSize = 14.sp,
                 color = Color.White
