@@ -1,15 +1,16 @@
 <resources>
-    <string name="app_name">Mobpro01</string>
+    <string name="app_name">Aplikasi Menambahkan Motor</string>
     <string name="gambar">Gambar %1$s</string>
     <string name="error">Gagal memuat data.. Koneksi error.</string>
     <string name="try_again">Coba lagi</string>
     <string name="profil">Profil</string>
     <string name="tutup">Tutup</string>
     <string name="logout">Logout</string>
-    <string name="tambah_hewan">Tambah Hewan</string>
-    <string name="nama">Nama</string>
-    <string name="nama_latin">Nama Latin</string>
+    <string name="tambah_motor">Tambah Hewan</string>
+    <string name="nama">Nama Motor</string>
+    <string name="jenis_motor">Jenis Motor</string>
     <string name="batal">Batal</string>
+    <string name="tahun_motor">Tahun</string>
     <string name="simpan">Simpan</string>
     <string name="konfirmasi_hapus">Apakah anda yakin ingin menghapus?</string>
     <string name="hapus">Hapus</string>

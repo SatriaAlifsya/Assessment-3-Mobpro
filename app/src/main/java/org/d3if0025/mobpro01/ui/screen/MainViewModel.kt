@@ -11,14 +11,14 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.d3if0025.mobpro01.model.Hewan
+import org.d3if0025.mobpro01.model.Motor
 import org.d3if0025.mobpro01.network.ApiStatus
-import org.d3if0025.mobpro01.network.HewanApi
+import org.d3if0025.mobpro01.network.MotorApi
 import java.io.ByteArrayOutputStream
 
 class MainViewModel : ViewModel() {
 
-    var data = mutableStateOf(emptyList<Hewan>())
+    var data = mutableStateOf(emptyList<Motor>())
         private set
 
     var status = MutableStateFlow(ApiStatus.LOADING)
@@ -31,7 +31,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             status.value = ApiStatus.LOADING
             try {
-                data.value = HewanApi.service.getHewan(userId)
+                data.value = MotorApi.service.getMotor(userId)
                 status.value = ApiStatus.SUCCESS
             } catch (e: Exception) {
                 Log.d("MainViewModel", "Failure: ${e.message}")
@@ -40,13 +40,14 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun saveData(userId: String, nama: String, namaLatin: String, bitmap: Bitmap) {
+    fun saveData(userId: String, nama: String, tahun: String, jenis: String, bitmap: Bitmap) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val result = HewanApi.service.postHewan(
+                val result = MotorApi.service.postMotor(
                     userId,
                     nama.toRequestBody("text/plain".toMediaTypeOrNull()),
-                    namaLatin.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    tahun.toRequestBody("text/plain".toMediaTypeOrNull()),
+                    jenis.toRequestBody("text/plain".toMediaTypeOrNull()),
                     bitmap.toMultipartBody()
                 )
 
@@ -61,11 +62,11 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun deleteData(userId: String, hewanId: String) {
+    fun deleteData(userId: String, motorId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                Log.d("MainViewModel", "Attempting to delete hewan with ID: $hewanId using user ID: $userId")
-                val result = HewanApi.service.deleteHewan(userId, hewanId)
+                Log.d("MainViewModel", "Attempting to delete motor with ID: $motorId using user ID: $userId")
+                val result = MotorApi.service.deleteMotor(userId, motorId)
                 Log.d("MainViewModel", "API Response: status=${result.status}, message=${result.message}")
                 if (result.status == "success") {
                     retrieveData(userId)

@@ -78,10 +78,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.d3if0025.mobpro01.BuildConfig
 import org.d3if0025.mobpro01.R
-import org.d3if0025.mobpro01.model.Hewan
+import org.d3if0025.mobpro01.model.Motor
 import org.d3if0025.mobpro01.model.User
 import org.d3if0025.mobpro01.network.ApiStatus
-import org.d3if0025.mobpro01.network.HewanApi
+import org.d3if0025.mobpro01.network.MotorApi
 import org.d3if0025.mobpro01.network.UserDataStore
 import org.d3if0025.mobpro01.ui.theme.Mobpro01Theme
 
@@ -96,14 +96,14 @@ fun MainScreen() {
     val errorMessage by viewModel.errorMessage
 
     var showDialog by remember { mutableStateOf(false) }
-    var showHewanDialog by remember { mutableStateOf(false) }
+    var showMotorDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var currentHewanId by remember { mutableStateOf("") }
+    var currentMotorId by remember { mutableStateOf("") }
 
     var bitmap: Bitmap? by remember { mutableStateOf(null) }
     val launcher = rememberLauncherForActivityResult(CropImageContract()) {
         bitmap = getCroppedImage(context.contentResolver, it)
-        if (bitmap != null) showHewanDialog = true
+        if (bitmap != null) showMotorDialog = true
     }
 
     Scaffold(
@@ -134,22 +134,23 @@ fun MainScreen() {
                 }
             )
         },
-
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                val options = CropImageContractOptions(
-                    null, CropImageOptions(
-                        imageSourceIncludeGallery = false,
-                        imageSourceIncludeCamera = true,
-                        fixAspectRatio = true
+            if (user.email.isNotEmpty()) {
+                FloatingActionButton(onClick = {
+                    val options = CropImageContractOptions(
+                        null, CropImageOptions(
+                            imageSourceIncludeGallery = true,
+                            imageSourceIncludeCamera = true,
+                            fixAspectRatio = true
+                        )
                     )
-                )
-                launcher.launch(options)
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(id = R.string.tambah_hewan)
-                )
+                    launcher.launch(options)
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(id = R.string.tambah_motor)
+                    )
+                }
             }
         }
     ) { padding ->
@@ -159,8 +160,8 @@ fun MainScreen() {
             modifier = Modifier.padding(padding),
             onDeleteRequest = { id ->
                 showDeleteDialog = true
-                currentHewanId = id
-                Log.d("MainScreen", "Current Hewan ID: $currentHewanId")
+                currentMotorId = id
+                Log.d("MainScreen", "Current Motor ID: $currentMotorId")
             },
             isUserLoggedIn = user.email.isNotEmpty()
         )
@@ -173,12 +174,12 @@ fun MainScreen() {
                 showDialog = false
             }
         }
-        if (showHewanDialog) {
-            HewanDialog(
+        if (showMotorDialog) {
+            MotorDialog(
                 bitmap = bitmap,
-                onDismissRequest = { showHewanDialog = false }) { nama, namaLatin ->
-                viewModel.saveData(user.email, nama, namaLatin, bitmap!!)
-                showHewanDialog = false
+                onDismissRequest = { showMotorDialog = false }) { nama, tahun, jenis ->
+                viewModel.saveData(user.email, nama, tahun, jenis, bitmap!!)
+                showMotorDialog = false
             }
         }
 
@@ -191,8 +192,8 @@ fun MainScreen() {
             DeleteConfirmationDialog(
                 onDismissRequest = { showDeleteDialog = false },
                 onConfirm = {
-                    Log.d("MainScreen", "Deleting Hewan ID: $currentHewanId")
-                    viewModel.deleteData(user.email, currentHewanId)
+                    Log.d("MainScreen", "Deleting Motor ID: $currentMotorId")
+                    viewModel.deleteData(user.email, currentMotorId)
                     showDeleteDialog = false
                 }
             )
@@ -233,11 +234,12 @@ fun ScreenContent(
                 columns = GridCells.Fixed(2),
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-                items(data) { hewan ->
+                items(data.filter { it.auth.isEmpty() || it.auth == userId }) { motor ->
                     ListItem(
-                        hewan = hewan,
+                        motor = motor,
                         onDeleteRequest = onDeleteRequest,
-                        isUserLoggedIn = isUserLoggedIn
+                        isUserLoggedIn = isUserLoggedIn,
+                        currentUserId = userId
                     )
                 }
             }
@@ -263,62 +265,69 @@ fun ScreenContent(
 }
 
 @Composable
-fun ListItem(hewan: Hewan, onDeleteRequest: (String) -> Unit, isUserLoggedIn: Boolean) {
-    Box(
-        modifier = Modifier
-            .padding(4.dp)
-            .border(1.dp, Color.Gray),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(HewanApi.getHewanUrl(hewan.imageId))
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(R.string.gambar, hewan.nama),
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(id = R.drawable.loading_img),
-            error = painterResource(id = R.drawable.broken_img),
+fun ListItem(motor: Motor, onDeleteRequest: (String) -> Unit, isUserLoggedIn: Boolean, currentUserId: String) {
+    if (motor.auth.isEmpty() || motor.auth == currentUserId) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(4.dp)
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
-                .background(Color(red = 0f, green = 0f, blue = 0f, alpha = 0.5f))
-                .padding(4.dp)
+                .border(1.dp, Color.Gray),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = hewan.nama,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Text(
-                    text = hewan.namaLatin,
-                    fontStyle = FontStyle.Italic,
-                    fontSize = 14.sp,
-                    color = Color.White
-                )
-            }
-            if (isUserLoggedIn && hewan.mine == 1) {
-                IconButton(
-                    onClick = {
-                        if (hewan.id.isNotEmpty()) {
-                            onDeleteRequest(hewan.id)
-                        } else {
-                            Log.d("ListItem", "Invalid hewan ID")
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = stringResource(R.string.hapus),
-                        tint = Color.White
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(MotorApi.getMotorUrl(motor.image))
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(R.string.gambar, motor.nama),
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.loading_img),
+                error = painterResource(id = R.drawable.broken_img),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+                    .background(Color(red = 0f, green = 0f, blue = 0f, alpha = 0.5f))
+                    .padding(4.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = motor.nama,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
+                    Text(
+                        text = motor.tahun,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 14.sp,
+                        color = Color.White
+                    )
+                    Text(
+                        text = motor.jenis,
+                        fontSize = 14.sp,
+                        color = Color.White
+                    )
+                }
+                if (isUserLoggedIn && motor.auth == currentUserId) {
+                    IconButton(
+                        onClick = {
+                            if (motor.id.isNotEmpty()) {
+                                onDeleteRequest(motor.id)
+                            } else {
+                                Log.d("ListItem", "Invalid feedback ID")
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = stringResource(R.string.hapus),
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         }

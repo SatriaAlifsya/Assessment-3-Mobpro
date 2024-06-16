@@ -33,13 +33,14 @@ import org.d3if0025.mobpro01.R
 import org.d3if0025.mobpro01.ui.theme.Mobpro01Theme
 
 @Composable
-fun HewanDialog(
+fun MotorDialog(
     bitmap: Bitmap?,
     onDismissRequest: () -> Unit,
-    onConfirmation: (String, String) -> Unit
+    onConfirmation: (String, String, String) -> Unit
 ) {
     var nama by remember { mutableStateOf("") }
-    var namaLatin by remember { mutableStateOf("") }
+    var tahun by remember { mutableStateOf("") }
+    var jenis by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -67,9 +68,20 @@ fun HewanDialog(
                     modifier = Modifier.padding(top = 8.dp)
                 )
                 OutlinedTextField(
-                    value = namaLatin,
-                    onValueChange = { namaLatin = it },
-                    label = { Text(text = stringResource(id = R.string.nama_latin)) },
+                    value = tahun,
+                    onValueChange = { tahun = it },
+                    label = { Text(text = stringResource(id = R.string.tahun_motor)) },
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                OutlinedTextField(
+                    value = jenis,
+                    onValueChange = { jenis = it },
+                    label = { Text(text = stringResource(id = R.string.jenis_motor)) },
                     maxLines = 1,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
@@ -88,11 +100,12 @@ fun HewanDialog(
                         Text(text = stringResource(R.string.batal))
                     }
                     OutlinedButton(
-                        onClick = { onConfirmation(nama, namaLatin) },
-                        enabled = nama.isNotEmpty() && namaLatin.isNotEmpty(),
+                        onClick = { onConfirmation(nama, tahun, jenis) },
+                        enabled = nama.isNotEmpty() && tahun.isNotEmpty() && jenis.isNotEmpty(),
                         modifier = Modifier.padding(8.dp)
                     ) {
                         Text(text = stringResource(R.string.simpan))
+
                     }
                 }
             }
@@ -105,10 +118,9 @@ fun HewanDialog(
 @Composable
 fun AddDialogPreview() {
     Mobpro01Theme {
-        HewanDialog(
+        MotorDialog(
             bitmap = null,
-            onDismissRequest = {},
-            onConfirmation = { _, _ -> }
-        )
+            onDismissRequest = {}
+        ) { _, _, _ -> }
     }
 }
